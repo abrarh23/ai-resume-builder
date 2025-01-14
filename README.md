@@ -1,1 +1,1 @@
-# ai-resume-builder
+A python app which parses your resume
