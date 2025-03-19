@@ -8,7 +8,7 @@ import os
 from datetime import datetime
 import logging
 from openai import OpenAI
-import openai
+from loguru import logger
 load_dotenv()
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -239,297 +239,7 @@ def convert_single_json_to_prompt_v2(user_data: dict, applied_job_desc: str) -> 
     prompt += applied_job_desc
     return prompt    
 
-def connect_to_openai() -> openai.OpenAI:
-    OPENAI_AUTH = os.getenv("OPENAI_AUTH")
-    openai_client = OpenAI(api_key=OPENAI_AUTH)
-    return openai_client
-
-def get_openai_gen_resume(user_prompt: str, system_prompt: str) -> dict:
-
-    response = connect_to_openai().chat.completions.create(
-    model="gpt-4o",
-    messages=[
-        {
-        "role": "system",
-        "content": [
-            {
-            "type": "text",
-            "text": f"{system_prompt}"
-            }
-        ]
-        },
-        {
-        "role": "user",
-        "content": [
-            {
-            "type": "text",
-            "text": f"{user_prompt}"
-            }
-        ]
-        }
-    ],
-    response_format={
-        "type": "json_schema",
-        "json_schema": {
-        "name": "resume_schema",
-        "strict": True,
-        "schema": {
-            "type": "object",
-            "properties": {
-            "cv": {
-                "type": "object",
-                "properties": {
-                "languages": {
-                    "type": "array",
-                    "description": "List of languages spoken by the individual.",
-                    "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                        "type": "string",
-                        "description": "Name of the language"
-                        },
-                        "proficiency": {
-                        "type": "string",
-                        "description": "Proficiency in the langauage"
-                        }
-                    },
-                    "required": [
-                        "name",
-                        "proficiency"
-                    ],
-                    "additionalProperties": False
-                    }
-                },
-                "city": {
-                    "type": "string",
-                    "description": "The city of residence."
-                },
-                "country": {
-                    "type": "string",
-                    "description": "The country of residence."
-                },
-                "educationHistory": {
-                    "type": "array",
-                    "description": "List of educational qualifications.",
-                    "items": {
-                    "type": "object",
-                    "properties": {
-                        "degreeAndField": {
-                        "type": "string",
-                        "description": "The degree and field of study."
-                        },
-                        "schoolName": {
-                        "type": "string",
-                        "description": "The name of the school or university attended."
-                        },
-                        "startedAt": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
-                        "description": "The date when the education started."
-                        },
-                        "graduatedAt": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
-                        "description": "The date when the education was completed."
-                        }
-                    },
-                    "required": [
-                        "degreeAndField",
-                        "schoolName",
-                        "startedAt",
-                        "graduatedAt"
-                    ],
-                    "additionalProperties": False
-                    }
-                },
-                "workHistory": {
-                    "type": "array",
-                    "description": "List of work experiences.",
-                    "items": {
-                    "type": "object",
-                    "properties": {
-                        "title": {
-                        "type": "string",
-                        "description": "Job title."
-                        },
-                        "companyName": {
-                        "type": "string",
-                        "description": "Name of the company."
-                        },
-                        "startAt": {
-                        "type": "string",
-                        "description": "The start date of employment."
-                        },
-                        "endAt": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
-                        "description": "The end date of employment."
-                        },
-                        "jobDescription": {
-                        "type": "string",
-                        "description": "Description of the job role."
-                        },
-                        "location": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
-                        "description": "Location of the job."
-                        }
-                    },
-                    "required": [
-                        "title",
-                        "companyName",
-                        "startAt",
-                        "endAt",
-                        "jobDescription",
-                        "location"
-                    ],
-                    "additionalProperties": False
-                    }
-                },
-                "projects": {
-                    "type": "array",
-                    "description": "List of projects undertaken.",
-                    "items": {
-                    "type": "object",
-                    "properties": {
-                        "title": {
-                        "type": "string",
-                        "description": "Title of the project."
-                        },
-                        "startAt": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
-                        "description": "The start date of the project."
-                        },
-                        "endAt": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
-                        "description": "The end date of the project."
-                        }
-                    },
-                    "required": [
-                        "title",
-                        "startAt",
-                        "endAt"
-                    ],
-                    "additionalProperties": False
-                    }
-                },
-                "linkedIn": {
-                    "type": [
-                    "string",
-                    "null"
-                    ],
-                    "description": "LinkedIn profile URL."
-                },
-                "website": {
-                    "type": [
-                    "string",
-                    "null"
-                    ],
-                    "description": "Personal website URL."
-                },
-                "skills": {
-                    "type": "array",
-                    "description": "List of skills possessed.",
-                    "items": {
-                    "type": "string"
-                    }
-                },
-                "bio": {
-                    "type": [
-                    "string",
-                    "null"
-                    ],
-                    "description": "Short biography."
-                },
-                "email": {
-                    "type": "string",
-                    "description": "Email address."
-                },
-                "phone": {
-                    "type": "string",
-                    "description": "Phone number."
-                },
-                "certificates": {
-                    "type": "array",
-                    "description": "List of certificates earned.",
-                    "items": {
-                    "type": "object",
-                    "properties": {
-                        "title": {
-                        "type": "string",
-                        "description": "Title of the certificate."
-                        },
-                        "company": {
-                        "type": "string",
-                        "description": "Company or institution that issued the certificate."
-                        },
-                        "issueDate": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
-                        "description": "The date when the certificate was issued."
-                        }
-                    },
-                    "required": [
-                        "title",
-                        "company",
-                        "issueDate"
-                    ],
-                    "additionalProperties": False
-                    }
-                }
-                },
-                "required": [
-                "languages",
-                "city",
-                "country",
-                "educationHistory",
-                "workHistory",
-                "projects",
-                "linkedIn",
-                "website",
-                "skills",
-                "bio",
-                "email",
-                "phone",
-                "certificates"
-                ],
-                "additionalProperties": False
-            }
-            },
-            "required": [
-            "cv"
-            ],
-            "additionalProperties": False
-        }
-        }
-    },
-    temperature=1,
-    max_completion_tokens=2048,
-    top_p=1,
-    frequency_penalty=0,
-    presence_penalty=0
-    )
-
-    return response.choices[0].message.content
-
-def connect_to_openai() -> openai.OpenAI:
+def connect_to_openai() -> OpenAI:
     OPENAI_AUTH = os.getenv("OPENAI_AUTH")
     openai_client = OpenAI(api_key=OPENAI_AUTH)
     return openai_client
@@ -823,43 +533,57 @@ def get_openai_gen_resume(user_prompt: str, system_prompt: str) -> dict:
 def main() -> dict:
     params = request.get_json()
     resume_url = params.get("resume_url", "https://storage.googleapis.com/qureos-prod/apprentice-profile/7559/data-analyst-abrar-hasan.pdf")
-    applied_job_desc = params.get("applied_job_desc", """Full job description
-Job Summary
+    logger.debug(f"resume_url: {resume_url}")
+    applied_job_desc = params.get("applied_job_desc", """# The job description of the job that the candidate is applying to:
+About the opportunity
 
-The Data Analyst will be responsible for collecting, analyzing, and interpreting complex data sets to provide actionable insights that support routine work. The role requires strong analytical skills, attention to detail, and proficiency in data visualization tools and techniques.
+Assist the Head of MD Office in strategic planning process; identifying key metrics, aligning targets and evaluating performance.
 
-Key Responsibilities
+Oversee coordination of regional and local programmes and projects; undertake research and prepare pre-meeting briefings.
 
-Data Collection & Analysis
-Gather and clean data from multiple sources to ensure accuracy and consistency.
-Analyze data to identify trends, patterns, and correlations.
-Reporting & Visualization
-Create dashboards, visualizations, and reports to present findings clearly to stakeholders.
-Use tools like Excel, Tableau, Power BI, or equivalent to communicate insights effectively.
-Business Insights
-Provide data-driven recommendations to support strategic business initiatives.
-Collaborate with cross-functional teams to understand their data requirements.
-Data Management
-Maintain data integrity and ensure compliance with organizational standards.
-Automate data workflows to improve efficiency.
-Forecasting & Modelling
-Develop predictive models to forecast business outcomes.
-Apply statistical methods to enhance decision-making.
-Qualifications & Skills
+Work cross functionally to understand business needs; analyse data to identify trends, drive insights and present actionable recommendations.
 
-Educational Requirements
-Bachelor’s degree in Data Science, Computer Science, Statistics, Economics, or a related field. A Master’s degree is a plus.
-Technical Skills
-Proficiency in SQL, Python.
-Experience with data visualization tools like Tableau, Power BI, or Looker.
-Knowledge of statistical tools and methods (e.g., regression analysis, hypothesis testing).
-Experience
-[1-3/3-5+] years of experience in data analysis, business intelligence, or a related role.
-Job Type: Full-time""")
+Plan and align goals across teams, ensuring alignment with central & regional objectives.
+
+Develop and manage business’s OKRs to forecast and analyse company performance through budgeting, resource planning and goal setting.
+
+
+What you need to be successful
+
+3-4 years experience as a BI/Data analyst.
+
+A Bachelor’s degree (minimum) or Master’s degree (preferred) in a quantitative discipline such as Computer Science or relevant discipline.
+
+Proven expertise in SQL and experience designing scalable, efficient queries to support data-driven decision-making.
+
+Demonstrated ability to craft compelling and creative data visualizations using Tableau or similar modern visualization tools.
+
+Strong command over the entire data analysis lifecycle including; problem formulation, data auditing and rigoro.
+
+Experience in data visualization, data storytelling, tableau, SQL, python (preferred), presentation of the query.
+
+
+
+Who we are
+
+foodpanda is part of the Delivery Hero Group, the world’s pioneering local delivery platform, our mission is to deliver an amazing experience—fast, easy, and to your door. We operate in over 70+ countries worldwide. Headquartered in Berlin, Germany. Delivery Hero has been listed on the Frankfurt Stock Exchange since 2017 and is part of the MDAX stock market index.
+
+
+What's in it for you
+
+What does your playfield look like?  
+
+We work in a flexible but fast paced environment.
+
+We start and end with customers to deliver exceptional service.
+
+We love to innovate, prioritize, decide, and deliver. 
+
+We love what we do, and we don’t rest until our targets are achieved. So if you’re also someone who is driven until the dream is achieved, come join us.""")
 
     parse_resp = get_parse_resume_json(resume_url)
     user_prompt = convert_single_json_to_prompt_v2(modify_candidate_data(parse_resp), applied_job_desc)
-    system_prompt = "Your job is to adjust the job description of the resume of the candidate applying to a job according to the job description. Try to rewrite the job description to make it similar to the job description of the job. Return the response in the JSON format. Resume and job description that the candidate is applying to will be provided in the prompt."
+    system_prompt = "Your job is to adjust the job description in experience section of the resume of the candidate according to the job description that the candidate is applying to. Try to rewrite the job description in the experience section of resume and replace only those sentences which are not relevant to the job. The new sentences that you add should maintain the tone of writing like rest of the resume. Reorder the sentences or bullet points that are more relevant to the job description to the top and less relevant points to the bottom. Write the job description in first-person perspective and use action verbs like 'managed', 'led', 'achieved', 'developed', 'implemented', etc. Use quantitative metircs in terms of numbers, percentages to make the job description more specific and realistic. Return the response in the JSON format. Resume and job description that the candidate is applying to will be provided in the prompt."
     
     ai_resume = get_openai_gen_resume(user_prompt, system_prompt)
     json_str = json.loads(ai_resume)
@@ -870,5 +594,5 @@ def healthcheck():
     return "OK", 200
 
 if __name__ == "__main__":
-    app.run()
+    app.run(host="0.0.0.0", port=5000)
 

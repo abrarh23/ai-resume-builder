@@ -1,0 +1,6 @@
+Flask
+Flask_Cors
+openai
+python-dotenv
+Requests
+loguru
